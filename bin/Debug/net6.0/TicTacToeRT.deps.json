@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "TicTacToeRT/1.0.0": {
+        "runtime": {
+          "TicTacToeRT.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TicTacToeRT/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

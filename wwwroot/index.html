@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tic-Tac-Toe RT</title>
+        <link href="image/tic-tac-toe-icon.png" rel="shortcut icon">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1 id="title">Tic-Tac-Toe</h1>
+    </header>
+
+    <main>
+        <form autocomplete="off">
+            <input type="text" id="name" placeholder="Enter Name" autofocus>
+        </form>
+    </main>
+
+    <!-- JavaScript Section -->
+    <script src="js/jquery.slim.js"></script>
+    <script>
+        $('form').submit(e => {
+            e.preventDefault();
+            let name = $('#name').val().trim();
+            if (name) {
+                sessionStorage.setItem('name', name);
+                location = 'list.html';
+            }
+            $('#name').val('').focus();
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Tick-Tac-Toe</title>
+    <link href="image/tic-tac-toe-icon.png" rel="shortcut icon">
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div id="opponent"></div>
+        <h1>Tic-Tac-Toe</h1>
+        <div class="play-area">
+
+        </div>
+        <h2 id="winner"></h2>
+        <div>
+            <button onclick="exit_game()">EXIT</button>
+            <button onclick="reset_board()">RESET</button>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+    <script src="js/jquery.slim.js"></script>
+    <script src="js/signalr.js"></script>
+    <script>
+        // Checking =======================================================================
+        const name = sessionStorage.getItem('name');
+        if (!name) {
+            location = '/';
+            throw 'ERROR: Invalid name';
+        }
+
+
+    </script>
+</body>
+
+</html>
