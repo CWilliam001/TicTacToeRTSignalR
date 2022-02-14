@@ -74,7 +74,7 @@ using Microsoft.AspNetCore.SignalR;
         private static List<Game> games = new  List<Game>()
         {
             //This is the empty list that store the list of the player details
-
+            //test
             //Just a little testing
         };
     }
