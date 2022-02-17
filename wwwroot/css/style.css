@@ -5,9 +5,23 @@
     font-family: Arial, Helvetica, sans-serif;
   }
 
-#title {
+.title {
   margin-left: 100px;
   margin-top: 100px;
+}
+
+.title>a {
+  color: black;
+  text-decoration: none;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #999;
+  padding: 10px 30px;
 }
 
 input {
@@ -35,6 +49,11 @@ input {
     margin-top: 1em;
     font-size: 2rem;
     margin-bottom: 0.5em;
+  }
+
+  #player_table {
+    margin-top: 30px;
+    margin-left: 100px;
   }
   
   .play-area {
@@ -112,12 +131,16 @@ input {
     background: green;
     color: white;
   }
+
+  #new_game_btn {
+    margin-left: 100px;
+  }
   
   .playerWin {
     color: green;
   }
   
-  .computerWin {
+  .playerLose {
     color: red;
   }
   

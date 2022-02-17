@@ -5,5 +5,5 @@ builder.Services.AddSignalR();
 var app = builder.Build();
 
 app.UseFileServer();
-app.MapHub<GameHub>("/hub");
+app.MapHub<TicTacToeRT.GameHub>("/hub");
 app.Run();

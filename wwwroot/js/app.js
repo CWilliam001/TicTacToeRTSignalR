@@ -1,10 +1,12 @@
 // Define P1 P2, Observer (If can)
-const player = "O";
-const computer = "X";
+const p1 = "O";
+const p2 = "X";
 
 // Define Tic-Tac-Toe Board
 let board_full = false;
 let play_board = ["", "", "", "", "", "", "", "", ""];
+let occupiedCount = 0;
+let playerRound = "";
 
 // Board Container : Whole activity changes at this const
 const board_container = document.querySelector(".play-area");
@@ -16,7 +18,7 @@ const winner_statement = document.getElementById("winner");
 check_board_complete = () => {
   let flag = true;
   play_board.forEach(element => {
-    if (element != player && element != computer) {
+    if (element != p1 && element != p2) {
       flag = false;
     }
   });
@@ -28,7 +30,7 @@ const check_line = (a, b, c) => {
   return (
     play_board[a] == play_board[b] &&
     play_board[b] == play_board[c] &&
-    (play_board[a] == player || play_board[a] == computer)
+    (play_board[a] == p1 || play_board[a] == p2)
   );
 };
 
@@ -68,13 +70,13 @@ const check_match = () => {
 // Winner and loser results
 const check_for_winner = () => {
   let res = check_match()
-  if (res == player) {
-    winner.innerText = "Winner is player!!";
+  if (res == p1) {
+    winner.innerText = "P1 Win";
     winner.classList.add("playerWin");
     board_full = true
-  } else if (res == computer) {
-    winner.innerText = "Winner is computer";
-    winner.classList.add("computerWin");
+  } else if (res == p2) {
+    winner.innerText = "P2 Win";
+    winner.classList.add("playerLose");
     board_full = true
   } else if (board_full) {
     winner.innerText = "Draw!";
@@ -82,17 +84,22 @@ const check_for_winner = () => {
   }
 };
 
-// Check board marking exist
+// Allow both player to click on the board
 const render_board = () => {
   board_container.innerHTML = ""
+  // Use forEach loop to define all blocks
   play_board.forEach((e, i) => {
-    board_container.innerHTML += `<div id="block_${i}" class="block" onclick="addPlayerMove(${i})">${play_board[i]}</div>`
-    if (e == player || e == computer) {
+    if (occupiedCount % 2 == 0) {
+      playerRound = "P1";
+    } else {
+      playerRound = "P2";
+    }
+    board_container.innerHTML += `<div id="block_${i}" class="block" onclick="add${playerRound}Move(${i})">${play_board[i]}</div>`
+    if (e == p1 || e == p2) {
       document.querySelector(`#block_${i}`).classList.add("occupied");
     }
   });
 };
-
 
 const game_loop = () => {
   render_board();
@@ -100,22 +107,19 @@ const game_loop = () => {
   check_for_winner();
 }
 
-
-const addPlayerMove = e => {
+const addP1Move = e => {
   if (!board_full && play_board[e] == "") {
-    play_board[e] = player;
+    play_board[e] = p1;
+    occupiedCount++;
     game_loop();
-    addComputerMove();
+    addP2Move();
   }
 };
 
-//Computer will select the unoccupied space to put the symbols
-const addComputerMove = () => {
-  if (!board_full) {
-    do {
-      selected = Math.floor(Math.random() * 9);
-    } while (play_board[selected] != "");
-    play_board[selected] = computer;
+const addP2Move = e => {
+  if (!board_full && play_board[e] == "") {
+    play_board[e] = p2;
+    occupiedCount++;
     game_loop();
   }
 };
@@ -125,10 +129,15 @@ const reset_board = () => {
   play_board = ["", "", "", "", "", "", "", "", ""];
   board_full = false;
   winner.classList.remove("playerWin");
-  winner.classList.remove("computerWin");
+  winner.classList.remove("playerLose");
   winner.classList.remove("draw");
   winner.innerText = "";
+  occupiedCount = 0;
   render_board();
+};
+
+const exit_game = () => {
+  location = 'list.html';
 };
 
 //initial render

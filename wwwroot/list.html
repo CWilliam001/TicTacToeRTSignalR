@@ -3,32 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic-Tac-Toe RT</title>
+    <title>Tic-Tac-Toe RT : List</title>
     <link href="image/tic-tac-toe-icon.png" rel="shortcut icon">
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
     <header>
-        <h1 id="title">Tic-Tac-Toe</h1>
+        <h1 class="title"><a href="/">Tic-Tac-Toe : List</a></h1>
     </header>
 
     <main>
-        <form autocomplete="off">
-            <input type="text" id="name" placeholder="Enter Name" autofocus>
-        </form>
+        <button id="new_game_btn" onclick="new_game()">NEW GAME</button>
+        <h2 class="title">Player: <b id="you"></b></h2>
+        
+        <table id="player_table">
+            <thead>
+                <tr>
+                    <th>Game ID</th>
+                    <th>Player</th>
+                    <th>Join</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </main>
 
     <!-- JavaScript Section -->
     <script src="js/jquery.slim.js"></script>
+    <script src="js/signalr.js"></script>
     <script>
-        $('form').submit(e => {
-            e.preventDefault();
-            let name = $('#name').val().trim();
-            if (name) {
-                sessionStorage.setItem('name', name);
-                location = 'list.html';
-            }
-            $('#name').val('').focus();
+        // ========================================================================================
+        // General
+        // ========================================================================================
+
+        const name = sessionStorage.getItem('name');
+
+        // Check session storage item exist
+        if (!name) {
+            location = 'index.html';
+            throw 'ERROR: Invalid Name';
+        }
+
+        $('#you').text(name);
+
+        
+        // ========================================================================================
+        // Events
+        // ========================================================================================
+
+        $('#create').click(async e => {
+            let gameId = await con.invoke('Create');
+            location = `game.html?gameId${gameId}`;
+        });
+
+        $('tbody').on('click', '[data-join]', e => {
+            let gameId = $(e.target).data('join');
+            location = `game.html?gameId${gameId}`;
         });
     </script>
 
