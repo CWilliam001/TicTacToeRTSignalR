@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tick-Tac-Toe</title>
     <link href="image/tic-tac-toe-icon.png" rel="shortcut icon">
-    <link rel="stylesheet" href="css/style.css" />
+    <link href="css/style.css" rel="stylesheet">
 </head>
-
 <body>
     <div class="container">
         <div id="opponent"></div>
@@ -22,41 +19,100 @@
             <button onclick="reset_board()">RESET</button>
         </div>
     </div>
+
     <script src="js/jquery.slim.js"></script>
     <script src="js/signalr.js"></script>
     <script src="js/app.js"></script>
     <script>
-        // Checking =======================================================================
+        // ========================================================================================
+        // General
+        // ========================================================================================
         
-        // Check session storage item exist
         const name = sessionStorage.getItem('name');
         if (!name) {
-            location = '/';
+            location = 'index.html';
             throw 'ERROR: Invalid name';
         }
 
-        // Check gameID exist
-        // const gameID = new URL(location).searchParams.get('gameId');
-        // if (!gameId) {
-        //     location = 'list.html';
-        //     throw 'ERROR: Invalid game ID';
-        // }
+        const gameId = new URL(location).searchParams.get('gameId');
+        if (!gameId) {
+            location = 'list.html';
+            throw 'ERROR: Invalid game id';
+        }
 
-        
+        let started = false;
+        let me = null; // A or B
+        const $status = $('#status');
+
         // ========================================================================================
         // Events
         // ========================================================================================
 
-        // Exit button
-        $('#exit').click(e => location = 'list.html');
-
+        $('#leave').click(e => location = 'list.html');
+       
         // ========================================================================================
         // Connect
         // ========================================================================================
 
-        // const param = $.param({ page: 'game', name, gameID });
+        const param = $.param({ page: 'game', icon, name, gameId });
 
+        const con = new signalR.HubConnectionBuilder()
+            .withUrl('/hub?' + param)
+            .build();
+        
+        con.onclose(err => {
+            alert('Disconnected');
+            location = 'index.html';
+        });
+
+        con.on('Reject', () => location = 'list.html');
+
+        con.on('Ready', (letter, game) => {
+            if (game.playerA) {
+                $('#nameA').text(game.playerA.name);
+                $('#A').text(game.playerA.icon).show();
+            }
+
+            if (game.playerB) {
+                $('#nameB').text(game.playerB.name);
+                $('#B').text(game.playerB.icon).show();
+            }
+
+            if (me == null) {
+                me = letter;
+                $('#' + me).addClass('me');
+            }
+
+            // TODO: Host starts the game
+
+        });
+
+        con.on("Left", letter => {
+            started = false;
+            $status.text(`Player ${letter} left. You win!`);
+            setTimeout(() => location = 'list.html', 3000);
+        });
+
+        // TODO: Start()
+
+
+        // TODO: Move(letter, count)
+
+
+        // TODO: Win(letter)
+        
+
+        con.start().then(main);
+
+        function main() {
+            // TODO: Button event
+
+
+            // TODO: Pointer event
+
+
+        }
+        
     </script>
 </body>
-
 </html>

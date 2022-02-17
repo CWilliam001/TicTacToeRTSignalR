@@ -13,22 +13,23 @@
     </header>
 
     <main>
-        <button id="new_game_btn" onclick="new_game()">NEW GAME</button>
         <h2 class="title">Player: <b id="you"></b></h2>
+        <p><button id="create" disabled>NEW GAME</button></p>
         
-        <table id="player_table">
+        <table>
             <thead>
                 <tr>
-                    <th>Game ID</th>
+                    <th>Game Id</th>
                     <th>Player</th>
-                    <th>Join</th>
+                    <th>Join Game</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                <tr><td colspan="3">No game</td></tr>
+            </tbody>
         </table>
     </main>
 
-    <!-- JavaScript Section -->
     <script src="js/jquery.slim.js"></script>
     <script src="js/signalr.js"></script>
     <script>
@@ -37,30 +38,69 @@
         // ========================================================================================
 
         const name = sessionStorage.getItem('name');
-
-        // Check session storage item exist
         if (!name) {
             location = 'index.html';
-            throw 'ERROR: Invalid Name';
+            throw 'ERROR: Invalid name';
         }
 
         $('#you').text(name);
 
-        
         // ========================================================================================
         // Events
         // ========================================================================================
 
         $('#create').click(async e => {
             let gameId = await con.invoke('Create');
-            location = `game.html?gameId${gameId}`;
+            location = `game.html?gameId=${gameId}`;
         });
 
         $('tbody').on('click', '[data-join]', e => {
             let gameId = $(e.target).data('join');
-            location = `game.html?gameId${gameId}`;
+            location = `game.html?gameId=${gameId}`;
         });
-    </script>
 
+        // ========================================================================================
+        // Connect
+        // ========================================================================================
+
+        const param = $.param({ page: 'list' });
+
+        const con = new signalR.HubConnectionBuilder()
+            .withUrl('/hub?' + param)
+            .build();
+        
+        con.onclose(err => {
+            alert('Disconnected');
+            location = 'index.html';
+        });
+
+        // TODO
+        con.on('UpdateList', list => {
+            let html = '';
+
+            for (let game of list) {
+                html += `
+                    <tr>
+                        <td>${game.id}</td>
+                        <td>${game.playerA.icon} ${game.playerA.name}</td>
+                        <td><button data-join="${game.id}">Join</button></td>
+                    </tr>
+                `;
+            }
+
+            if (list.length == 0) {
+                html = '<tr><td colspan="3">No game</td></tr>';
+            }
+
+            $('tbody').html(html);
+        });
+
+        con.start().then(main);
+
+        function main() {
+            $('#create').prop('disabled', false);
+        }
+
+    </script>
 </body>
 </html>

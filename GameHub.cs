@@ -5,89 +5,105 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace TicTacToeRT
 {
+
     // ============================================================================================
     // Class: Player
     // ============================================================================================
-
+        
     public class Player
     {
+        private const int STEP = 1;
+        private const int FINISH = 100;
+
         public string Id { get; set; }
         public string Name { get; set; }
         public int Count { get; set; } = 0;
+        public bool IsWin => Count >= FINISH;
 
-        public Player(string id, string name) => (Id, Name) = (id, name);
-        
+        public Player(string id,  string name) => (Id, Name) = (id, name);
+
+        public void Run() => Count += STEP;
     }
+
+
 
     // ============================================================================================
     // Class: Game
     // ============================================================================================
-
+    
     public class Game
     {
-        public string Id { get; set; }
-        public Player P1 { get; set; }
-        public Player P2 { get; set; }
-        
-        public bool IsWaiting { get; set; }
-        
-        public bool IsEmpty => P1 == null && P2 == null;
-        public bool IsFull => P1 != null && P2 != null;
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public Player PlayerA { get; set; }
+        public Player PlayerB { get; set; }
+        public bool IsWaiting { get; set; } = false;
+
+        public bool IsEmpty => PlayerA == null && PlayerB == null;
+        public bool IsFull  => PlayerA != null && PlayerB != null;
 
         public string AddPlayer(Player player)
         {
-            if (P1 == null)
+            if (PlayerA == null)
             {
-                P1 = player;
+                PlayerA = player;
                 IsWaiting = true;
-                return "P1";
-            } else if (P2 == null)
-            {
-                P2 = player;
-                IsWaiting = false;
-                return "P2";
+                return "A";
             }
+            else if (PlayerB == null)
+            {
+                PlayerB = player;
+                IsWaiting = false;
+                return "B";
+            }
+
             return null;
         }
-            }
-
+    }
     
-    // ============================================================================================
-    // Class: GameHub ⭕❌
-    // ============================================================================================
 
 
+    // ============================================================================================
+    // Class: GameHub 👦🏻👧🏻
+    // ============================================================================================
+    
     public class GameHub : Hub
     {
-        
         // ----------------------------------------------------------------------------------------
         // General
         // ----------------------------------------------------------------------------------------
 
-        private static List<Game> games = new  List<Game>()
+        private static List<Game> games = new List<Game>()
         {
-            //This is the empty list that store the list of the player details
+            // A method that store the List of games
         };
 
-        public string CreateRoom()
+        public string Create()
         {
             var game = new Game();
             games.Add(game);
             return game.Id;
         }
-        
+
+        // TODO: Start()
+
+
+        // TODO: Run(letter)
+
+
         // ----------------------------------------------------------------------------------------
         // Functions
         // ----------------------------------------------------------------------------------------
-
+ 
         private async Task UpdateList(string id = null)
         {
-            var list = games.FindAll(games => games.IsWaiting);
+            var list = games.FindAll(g => g.IsWaiting);
 
             if (id == null)
             {
                 await Clients.All.SendAsync("UpdateList", list);
-            } else {
+            }
+            else
+            {
                 await Clients.Client(id).SendAsync("UpdateList", list);
             }
         }
@@ -95,17 +111,17 @@ namespace TicTacToeRT
         // ----------------------------------------------------------------------------------------
         // Connected
         // ----------------------------------------------------------------------------------------
-        
-        public async Task OnConnectedAsync()
+
+        public override async Task OnConnectedAsync()
         {
-            string  page = Context.GetHttpContext().Request.Query["page"];
+            string page = Context.GetHttpContext().Request.Query["page"];
 
             switch (page)
             {
                 case "list": await ListConnected(); break;
                 case "game": await GameConnected(); break;
             }
-            
+
             await base.OnConnectedAsync();
         }
 
@@ -117,13 +133,11 @@ namespace TicTacToeRT
 
         private async Task GameConnected()
         {
-            string id = Context.ConnectionId;
-            string icon = Context.GetHttpContext().Request.Query["icon"];
-            string name = Context.GetHttpContext().Request.Query["name"];
+            string id     = Context.ConnectionId;
+            string name   = Context.GetHttpContext().Request.Query["name"];
             string gameId = Context.GetHttpContext().Request.Query["gameId"];
 
             Game game = games.Find(g => g.Id == gameId);
-
             if (game == null || game.IsFull)
             {
                 await Clients.Caller.SendAsync("Reject");
@@ -131,10 +145,64 @@ namespace TicTacToeRT
             }
 
             Player p = new Player(id, name);
-            string letter =  game.AddPlayer(p);
+            string letter = game.AddPlayer(p);
             await Groups.AddToGroupAsync(id, gameId);
             await Clients.Group(gameId).SendAsync("Ready", letter, game);
             await UpdateList();
         }
+
+        // ----------------------------------------------------------------------------------------
+        // Disconnected
+        // ----------------------------------------------------------------------------------------
+
+        public override async Task OnDisconnectedAsync(Exception exception) 
+        {
+            string page = Context.GetHttpContext().Request.Query["page"];
+
+            switch (page)
+            {
+                case "list": ListDisconnected(); break;
+                case "game": await GameDisconnected(); break;
+            }
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
+        private void ListDisconnected()
+        {
+            // Nothing
+        }
+
+        private async Task GameDisconnected()
+        {
+            string id     = Context.ConnectionId;
+            string gameId = Context.GetHttpContext().Request.Query["gameId"];
+
+            Game game = games.Find(g => g.Id == gameId);
+            if (game == null)
+            {
+                await Clients.Caller.SendAsync("Reject");
+                return;
+            }
+
+            if (game.PlayerA?.Id == id)
+            {
+                game.PlayerA = null;
+                await Clients.Group(gameId).SendAsync("Left", "A");
+            }
+            else if (game.PlayerB?.Id == id)
+            {
+                game.PlayerB = null;
+                await Clients.Group(gameId).SendAsync("Left", "B");
+            }
+
+            if (game.IsEmpty)
+            {
+                games.Remove(game);
+                await UpdateList();
+            }
+        }
+
+        // End of GameHub -------------------------------------------------------------------------
     }
 }

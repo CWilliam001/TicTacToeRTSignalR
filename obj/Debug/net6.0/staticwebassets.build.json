@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "dp8kGIR+gGI1cBTx60InsFUDV9Obsj8iA66aJ8HpM0s=",
+  "Hash": "6QyYwUv0vkhUFwDgqBtKrQG2iu8m8zTj5bEu0Tr2uLE=",
   "Source": "TicTacToeRT",
   "BasePath": "_content/TicTacToeRT",
   "Mode": "Default",
@@ -16,6 +16,23 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "D:\\TARUC memories\\Bachelor Degree\\BY2S3\\BAIT3093 Emerging Web Technologies\\Assignment\\SignalR\\TicTacToeRT\\wwwroot\\css\\app.css",
+      "SourceId": "TicTacToeRT",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\TARUC memories\\Bachelor Degree\\BY2S3\\BAIT3093 Emerging Web Technologies\\Assignment\\SignalR\\TicTacToeRT\\wwwroot\\",
+      "BasePath": "_content/TicTacToeRT",
+      "RelativePath": "css/app.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\css\\app.css"
+    },
     {
       "Identity": "D:\\TARUC memories\\Bachelor Degree\\BY2S3\\BAIT3093 Emerging Web Technologies\\Assignment\\SignalR\\TicTacToeRT\\wwwroot\\css\\style.css",
       "SourceId": "TicTacToeRT",
@@ -49,6 +66,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\game.html"
+    },
+    {
+      "Identity": "D:\\TARUC memories\\Bachelor Degree\\BY2S3\\BAIT3093 Emerging Web Technologies\\Assignment\\SignalR\\TicTacToeRT\\wwwroot\\image\\favicon.png",
+      "SourceId": "TicTacToeRT",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\TARUC memories\\Bachelor Degree\\BY2S3\\BAIT3093 Emerging Web Technologies\\Assignment\\SignalR\\TicTacToeRT\\wwwroot\\",
+      "BasePath": "_content/TicTacToeRT",
+      "RelativePath": "image/favicon.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\image\\favicon.png"
     },
     {
       "Identity": "D:\\TARUC memories\\Bachelor Degree\\BY2S3\\BAIT3093 Emerging Web Technologies\\Assignment\\SignalR\\TicTacToeRT\\wwwroot\\image\\tic-tac-toe-icon.png",
