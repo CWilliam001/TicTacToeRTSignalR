@@ -19,13 +19,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>Game Id</th>
                     <th>Player</th>
                     <th>Join Game</th>
                 </tr>
             </thead>
             <tbody>
-                <tr><td colspan="3">No game</td></tr>
+                <tr><td colspan="2">No game</td></tr>
             </tbody>
         </table>
     </main>
@@ -81,15 +80,14 @@
             for (let game of list) {
                 html += `
                     <tr>
-                        <td>${game.id}</td>
-                        <td>${game.playerA.icon} ${game.playerA.name}</td>
+                        <td>${game.playerA.name}</td>
                         <td><button data-join="${game.id}">Join</button></td>
                     </tr>
                 `;
             }
 
             if (list.length == 0) {
-                html = '<tr><td colspan="3">No game</td></tr>';
+                html = '<tr><td colspan="2">No game</td></tr>';
             }
 
             $('tbody').html(html);

@@ -12,17 +12,10 @@ namespace TicTacToeRT
         
     public class Player
     {
-        private const int STEP = 1;
-        private const int FINISH = 100;
-
         public string Id { get; set; }
         public string Name { get; set; }
-        public int Count { get; set; } = 0;
-        public bool IsWin => Count >= FINISH;
 
         public Player(string id,  string name) => (Id, Name) = (id, name);
-
-        public void Run() => Count += STEP;
     }
 
 
@@ -63,7 +56,7 @@ namespace TicTacToeRT
 
 
     // ============================================================================================
-    // Class: GameHub 👦🏻👧🏻
+    // Class: GameHub ⭕❌
     // ============================================================================================
     
     public class GameHub : Hub
@@ -83,12 +76,6 @@ namespace TicTacToeRT
             games.Add(game);
             return game.Id;
         }
-
-        // TODO: Start()
-
-
-        // TODO: Run(letter)
-
 
         // ----------------------------------------------------------------------------------------
         // Functions

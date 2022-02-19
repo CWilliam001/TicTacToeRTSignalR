@@ -1,12 +1,89 @@
-// Define P1 P2, Observer (If can)
-const p1 = "O";
-const p2 = "X";
+// ========================================================================================
+// General
+// ========================================================================================
+
+const name = sessionStorage.getItem('name');
+if (!name) {
+    location = 'index.html';
+    throw 'ERROR: Invalid name';
+}
+
+const gameId = new URL(location).searchParams.get('gameId');
+if (!gameId) {
+    location = 'list.html';
+    throw 'ERROR: Invalid game id';
+}
+
+let started = false;
+let me = null; // A or B
+const $status = $('#status');
+
+
+// ========================================================================================
+// Events
+// ========================================================================================
+
+$('#leave').click(e => location = 'list.html');
+
+// ========================================================================================
+// Connect
+// ========================================================================================
+
+const param = $.param({ page: 'game', name, gameId });
+
+const con = new signalR.HubConnectionBuilder().withUrl('/hub?' + param).build();
+
+con.onclose(err => {
+    alert('Disconnected');
+    location = 'index.html';
+});
+
+con.on('Reject', () => location = 'list.html');
+
+con.on('Ready', (letter, game) => {
+
+    if (game.playerA && game.playerB) {
+        $status.text(`${ game.playerA.name } VS ${ game.playerB.name }`);
+    }
+
+    if (me == null) {
+        me = letter;
+        $('#' + me).addClass('me');
+    }
+
+    // TODO: Host starts the game
+
+});
+
+con.on("Left", letter => {
+    started = false;
+    $status.text(`Player ${letter} left. You win!`);
+    setTimeout(() => location = 'list.html', 5000);
+});
+
+
+con.start().then(main);
+
+function main() {
+
+}
+
+
+// ========================================================================================
+// Game
+// ========================================================================================
+
+// Define Player
+const p1 = "⭕";
+const p2 = "❌";
 
 // Define Tic-Tac-Toe Board
 let board_full = false;
 let play_board = ["", "", "", "", "", "", "", "", ""];
 let occupiedCount = 0;
 let playerRound = "";
+
+// const con = new signalR.HubConnectionBuilder().withUrl('/hub?' + param).build();
 
 // Board Container : Whole activity changes at this const
 const board_container = document.querySelector(".play-area");
@@ -25,7 +102,7 @@ check_board_complete = () => {
   board_full = flag;
 };
 
-
+// Check line for every move
 const check_line = (a, b, c) => {
   return (
     play_board[a] == play_board[b] &&
@@ -34,7 +111,7 @@ const check_line = (a, b, c) => {
   );
 };
 
-// Check match : Check line exist if true -> game over
+// Check match : Check line exist if true -> game end
 const check_match = () => {
   for (i = 0; i < 9; i += 3) {
     if (check_line(i, i + 1, i + 2)) {
@@ -91,6 +168,7 @@ const render_board = () => {
   play_board.forEach((e, i) => {
     if (occupiedCount % 2 == 0) {
       playerRound = "P1";
+      
     } else {
       playerRound = "P2";
     }
@@ -111,6 +189,7 @@ const addP1Move = e => {
   if (!board_full && play_board[e] == "") {
     play_board[e] = p1;
     occupiedCount++;
+    con.invoke('SendMove', "P2", play_board[e]);
     game_loop();
     addP2Move();
   }
@@ -123,6 +202,13 @@ const addP2Move = e => {
     game_loop();
   }
 };
+
+// To-do receive opponent move
+con.on('ReceiveOpponentMove', (player, move) => {
+  play_board[move] = player;
+  occupiedCount++;
+  game_loop();
+})
 
 // Clear board and remove result
 const reset_board = () => {
