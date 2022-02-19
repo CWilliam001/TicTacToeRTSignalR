@@ -2,8 +2,8 @@
 // General
 // ========================================================================================
 
-const name = sessionStorage.getItem('name');
-if (!name) {
+const playerName = sessionStorage.getItem('name');
+if (!playerName) {
     location = 'index.html';
     throw 'ERROR: Invalid name';
 }
@@ -148,11 +148,11 @@ const check_match = () => {
 const check_for_winner = () => {
   let res = check_match()
   if (res == p1) {
-    winner.innerText = "P1 Win";
+    winner.innerText = "Player A Win";
     winner.classList.add("playerWin");
     board_full = true
   } else if (res == p2) {
-    winner.innerText = "P2 Win";
+    winner.innerText = "Player B Win";
     winner.classList.add("playerLose");
     board_full = true
   } else if (board_full) {
@@ -168,7 +168,7 @@ const render_board = () => {
   play_board.forEach((e, i) => {
     if (occupiedCount % 2 == 0) {
       playerRound = "P1";
-      
+
     } else {
       playerRound = "P2";
     }
