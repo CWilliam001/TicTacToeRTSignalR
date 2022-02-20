@@ -18,8 +18,6 @@ namespace TicTacToeRT
         public Player(string id,  string name) => (Id, Name) = (id, name);
     }
 
-
-
     // ============================================================================================
     // Class: Game
     // ============================================================================================
@@ -31,6 +29,7 @@ namespace TicTacToeRT
         public Player PlayerB { get; set; }
         public bool IsWaiting { get; set; } = false;
 
+        // Check room is full
         public bool IsEmpty => PlayerA == null && PlayerB == null;
         public bool IsFull  => PlayerA != null && PlayerB != null;
 
@@ -53,8 +52,6 @@ namespace TicTacToeRT
         }
     }
     
-
-
     // ============================================================================================
     // Class: GameHub ⭕❌
     // ============================================================================================
@@ -157,7 +154,7 @@ namespace TicTacToeRT
 
         private void ListDisconnected()
         {
-            // Nothing
+            // Nothing to do...
         }
 
         private async Task GameDisconnected()
@@ -175,12 +172,12 @@ namespace TicTacToeRT
             if (game.PlayerA?.Id == id)
             {
                 game.PlayerA = null;
-                await Clients.Group(gameId).SendAsync("Left", "A");
+                await Clients.Group(gameId).SendAsync("Left", game);
             }
             else if (game.PlayerB?.Id == id)
             {
                 game.PlayerB = null;
-                await Clients.Group(gameId).SendAsync("Left", "B");
+                await Clients.Group(gameId).SendAsync("Left", game);
             }
 
             if (game.IsEmpty)
@@ -195,6 +192,15 @@ namespace TicTacToeRT
         // ----------------------------------------------------------------------------------------
 
         // ToDo: SendMove(int movePosition, string player)
+        public async Task SendMove(string player, int movePosition, string gameId)
+        {
+            await Clients.Others.SendAsync("ReceiveMove", player, movePosition, gameId);
+        }
+
+        public async Task Reset(string gameId)
+        {
+            await Clients.Others.SendAsync("ReceiveReset", gameId);
+        }
 
         // End of GameHub -------------------------------------------------------------------------
     }

@@ -2,8 +2,8 @@
 // General
 // ========================================================================================
 
-const playerName = sessionStorage.getItem('name');
-if (!playerName) {
+const name = sessionStorage.getItem('name');
+if (!name) {
     location = 'index.html';
     throw 'ERROR: Invalid name';
 }
@@ -40,25 +40,49 @@ con.onclose(err => {
 
 con.on('Reject', () => location = 'list.html');
 
+
 con.on('Ready', (letter, game) => {
+  if (me == null) {
+      me = letter;
+      $('#p' + me).addClass('me');
+  }
 
-    if (game.playerA && game.playerB) {
-        $status.text(`${ game.playerA.name } VS ${ game.playerB.name }`);
-    }
+  if (game.playerA && game.playerB) {
+    $status.text(`${ game.playerA.name } VS ${ game.playerB.name }`);
+    
+    let html = `
+    <table id="player">
+        <tr>
+            <td id="pA" class="">${ game.playerA.name }</td>
+            <td>${ p1 }</td>
+        </tr>
+        <tr>
+            <td id="pB" class="">${ game.playerB.name }</td>
+            <td>${ p2 }</td>
+        </tr>
+    </table>
+    `;
 
-    if (me == null) {
-        me = letter;
-        $('#' + me).addClass('me');
-    }
+    $('#playerSymbol').html(html);
+}
 
-    // TODO: Host starts the game
-
+  
 });
 
-con.on("Left", letter => {
+con.on("Left", game => {
+    let id = setTimeout(() => location = 'list.html', 5000);
+
+    while (id--) {
+      clearTimeout(id);
+    }
+
     started = false;
-    $status.text(`Player ${letter} left. You win!`);
-    setTimeout(() => location = 'list.html', 5000);
+    // if (letter == "A") {
+    //   $status.text(`${ game.playerA.name } has left the game. You will be redirected back to lobby immediately.`);
+    // } else {
+    //   $status.text(`${ game.playerB.name } has left the game. You will be redirected back to lobby immediately.`);
+    // }
+      $status.text(`Your opponent has left the game.\nYou will be redirected back to lobby soon.`);
 });
 
 
@@ -67,7 +91,6 @@ con.start().then(main);
 function main() {
 
 }
-
 
 // ========================================================================================
 // Game
@@ -82,8 +105,6 @@ let board_full = false;
 let play_board = ["", "", "", "", "", "", "", "", ""];
 let occupiedCount = 0;
 let playerRound = "";
-
-// const con = new signalR.HubConnectionBuilder().withUrl('/hub?' + param).build();
 
 // Board Container : Whole activity changes at this const
 const board_container = document.querySelector(".play-area");
@@ -165,10 +186,16 @@ const check_for_winner = () => {
 const render_board = () => {
   board_container.innerHTML = ""
   // Use forEach loop to define all blocks
+  con.on('ReceiveMove', (player, move, currentGameId) => {
+    if (gameId == currentGameId) {
+      console.log("Receive Move " + player + " : " + move)
+      play_board[move] = player;
+      game_loop();
+    }    
+  });
   play_board.forEach((e, i) => {
     if (occupiedCount % 2 == 0) {
       playerRound = "P1";
-
     } else {
       playerRound = "P2";
     }
@@ -189,9 +216,9 @@ const addP1Move = e => {
   if (!board_full && play_board[e] == "") {
     play_board[e] = p1;
     occupiedCount++;
-    con.invoke('SendMove', "P2", play_board[e]);
+    con.invoke('SendMove', p1, e, gameId);
+    console.log('Send A ' + p1 + " : " + e + "\n" + gameId + "\nOccupied Count: " + occupiedCount);
     game_loop();
-    addP2Move();
   }
 };
 
@@ -199,19 +226,15 @@ const addP2Move = e => {
   if (!board_full && play_board[e] == "") {
     play_board[e] = p2;
     occupiedCount++;
+    con.invoke('SendMove', p2, e, gameId);
+    console.log('Send B ' + p2 + " : "+ e + "  \n" + gameId + "\nOccupied Count: " + occupiedCount);
     game_loop();
   }
 };
 
-// To-do receive opponent move
-con.on('ReceiveOpponentMove', (player, move) => {
-  play_board[move] = player;
-  occupiedCount++;
-  game_loop();
-})
-
 // Clear board and remove result
 const reset_board = () => {
+  console.log("Send reset command");
   play_board = ["", "", "", "", "", "", "", "", ""];
   board_full = false;
   winner.classList.remove("playerWin");
@@ -220,11 +243,25 @@ const reset_board = () => {
   winner.innerText = "";
   occupiedCount = 0;
   render_board();
+  con.invoke('Reset');
+  console.log("Send reset command");
 };
 
-const exit_game = () => {
-  location = 'list.html';
-};
+con.on('ReceiveReset', currentGameId => {
+  if (gameId == currentGameId) {
+    console.log("Receive reset command gameID = " + currentGameId);
+    play_board = ["", "", "", "", "", "", "", "", ""];
+    board_full = false;
+    winner.classList.remove("playerWin");
+    winner.classList.remove("playerLose");
+    winner.classList.remove("draw");
+    winner.innerText = "";
+    occupiedCount = 0;
+    render_board();
+  }
+});
+
+const exit_game = () => { location = 'list.html'; };
 
 //initial render
 render_board();
