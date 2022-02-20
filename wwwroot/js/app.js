@@ -17,7 +17,9 @@ if (!gameId) {
 let started = false;
 let me = null; // A or B
 const $status = $('#status');
-
+let playerA = null;
+let playerB = null;
+let pX = null;
 
 // ========================================================================================
 // Events
@@ -42,47 +44,49 @@ con.on('Reject', () => location = 'list.html');
 
 
 con.on('Ready', (letter, game) => {
-  if (me == null) {
-      me = letter;
-      $('#p' + me).addClass('me');
-  }
-
   if (game.playerA && game.playerB) {
-    $status.text(`${ game.playerA.name } VS ${ game.playerB.name }`);
+    playerA = game.playerA.name;
+    playerB = game.playerB.name
+    $status.text(`${ playerA } VS ${ playerB }`);
     
     let html = `
     <table id="player">
         <tr>
-            <td id="pA" class="">${ game.playerA.name }</td>
+            <td>Player A</td>
+            <td>${ game.playerA.name }</td>
             <td>${ p1 }</td>
         </tr>
         <tr>
-            <td id="pB" class="">${ game.playerB.name }</td>
+            <td>Player B</td>
+            <td>${ game.playerB.name }</td>
             <td>${ p2 }</td>
         </tr>
     </table>
+    <h4 id="you_are">You are: Player ${ me }</h4>
     `;
-
+    console.log(playerA + " vs " + playerB + "\nMe: " + me);
     $('#playerSymbol').html(html);
 }
 
   
 });
 
-con.on("Left", game => {
+con.on("Left", () => {
     let id = setTimeout(() => location = 'list.html', 5000);
 
     while (id--) {
       clearTimeout(id);
     }
-
+    console.log("Player Disconnected");
     started = false;
-    // if (letter == "A") {
-    //   $status.text(`${ game.playerA.name } has left the game. You will be redirected back to lobby immediately.`);
+    // if (letter == 'A') {
+    //   $status.text(`${ playerA } has left the game. You will be redirected back to lobby immediately.`);
+    //   console.log("Display A left message");
     // } else {
-    //   $status.text(`${ game.playerB.name } has left the game. You will be redirected back to lobby immediately.`);
+    //   $status.text(`${ playerB } has left the game. You will be redirected back to lobby immediately.`);
+    //   console.log("Display B left message");
     // }
-      $status.text(`Your opponent has left the game.\nYou will be redirected back to lobby soon.`);
+    $status.text(`Your opponent has left the game.\nYou will be redirected back to lobby soon.`);
 });
 
 
@@ -104,7 +108,7 @@ const p2 = "❌";
 let board_full = false;
 let play_board = ["", "", "", "", "", "", "", "", ""];
 let occupiedCount = 0;
-let playerRound = "";
+let playerRound = "P1";
 
 // Board Container : Whole activity changes at this const
 const board_container = document.querySelector(".play-area");
@@ -186,22 +190,26 @@ const check_for_winner = () => {
 const render_board = () => {
   board_container.innerHTML = ""
   // Use forEach loop to define all blocks
-  con.on('ReceiveMove', (player, move, currentGameId) => {
+  con.on('ReceiveMove', (player, move, occcupiedCount, currentGameId) => {
     if (gameId == currentGameId) {
-      console.log("Receive Move " + player + " : " + move)
+      occupiedCount = occcupiedCount;
+      console.log("Player " + me + ": " + "\nReceive Move " + player + "\nMove: " + move + "\nReceive Occupied Count: " + occupiedCount);
       play_board[move] = player;
       game_loop();
     }    
   });
+  if (occupiedCount % 2 == 0) {
+    playerRound = "P1";
+  } else {
+    playerRound = "P2";
+  }
+
+  console.log("Current round: " + (playerRound == "P1" ? "Player A" : "Player B"));
+  $('#playerRound').text(`${ playerRound == "P1" ? "Player A" : "Player B" }\'s Turn.`);
   play_board.forEach((e, i) => {
-    if (occupiedCount % 2 == 0) {
-      playerRound = "P1";
-    } else {
-      playerRound = "P2";
-    }
-    board_container.innerHTML += `<div id="block_${i}" class="block" onclick="add${playerRound}Move(${i})">${play_board[i]}</div>`
+    board_container.innerHTML += `<div id="block_${ i }" class="block" onclick="add${ playerRound }Move(${ i })">${ play_board[i] }</div>`
     if (e == p1 || e == p2) {
-      document.querySelector(`#block_${i}`).classList.add("occupied");
+      document.querySelector(`#block_${ i }`).classList.add("occupied");
     }
   });
 };
@@ -216,8 +224,8 @@ const addP1Move = e => {
   if (!board_full && play_board[e] == "") {
     play_board[e] = p1;
     occupiedCount++;
-    con.invoke('SendMove', p1, e, gameId);
-    console.log('Send A ' + p1 + " : " + e + "\n" + gameId + "\nOccupied Count: " + occupiedCount);
+    con.invoke('SendMove', p1, e, occupiedCount, gameId);
+    console.log("Player A: " + p1 + "\nMove: " + e + "\nGame ID: " + gameId + "\nOccupied Count: " + occupiedCount);
     game_loop();
   }
 };
@@ -226,15 +234,15 @@ const addP2Move = e => {
   if (!board_full && play_board[e] == "") {
     play_board[e] = p2;
     occupiedCount++;
-    con.invoke('SendMove', p2, e, gameId);
-    console.log('Send B ' + p2 + " : "+ e + "  \n" + gameId + "\nOccupied Count: " + occupiedCount);
+    con.invoke('SendMove', p2, e, occupiedCount, gameId);
+    console.log("Player B: " + p2 + "\nMove: " + e + "\nGame ID: " + gameId + "\nOccupied Count: " + occupiedCount);
     game_loop();
   }
 };
 
 // Clear board and remove result
 const reset_board = () => {
-  console.log("Send reset command");
+  console.log("Send reset command\n Game ID: " + gameId);
   play_board = ["", "", "", "", "", "", "", "", ""];
   board_full = false;
   winner.classList.remove("playerWin");
@@ -243,13 +251,14 @@ const reset_board = () => {
   winner.innerText = "";
   occupiedCount = 0;
   render_board();
-  con.invoke('Reset');
+  con.invoke('Reset', gameId);
   console.log("Send reset command");
+  console.clear();
 };
 
 con.on('ReceiveReset', currentGameId => {
   if (gameId == currentGameId) {
-    console.log("Receive reset command gameID = " + currentGameId);
+    console.log("Receive reset command\nGame ID: " + currentGameId);
     play_board = ["", "", "", "", "", "", "", "", ""];
     board_full = false;
     winner.classList.remove("playerWin");
@@ -258,6 +267,7 @@ con.on('ReceiveReset', currentGameId => {
     winner.innerText = "";
     occupiedCount = 0;
     render_board();
+    console.clear();
   }
 });
 

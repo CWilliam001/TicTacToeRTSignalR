@@ -192,9 +192,9 @@ namespace TicTacToeRT
         // ----------------------------------------------------------------------------------------
 
         // ToDo: SendMove(int movePosition, string player)
-        public async Task SendMove(string player, int movePosition, string gameId)
+        public async Task SendMove(string player, int movePosition, int occupiedCount, string gameId)
         {
-            await Clients.Others.SendAsync("ReceiveMove", player, movePosition, gameId);
+            await Clients.Others.SendAsync("ReceiveMove", player, movePosition, occupiedCount, gameId);
         }
 
         public async Task Reset(string gameId)
