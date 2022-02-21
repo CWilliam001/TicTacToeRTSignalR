@@ -178,17 +178,35 @@ const check_match = () => {
 // Winner and loser results
 const check_for_winner = () => {
   let res = check_match()
+  let winnerAudio = new Audio('audio/winner.mp3');
+  let loserAudio = new Audio('audio/loser.mp3');
+  let drawAudio = new Audio('audio/draw.mp3');
   if (res == p1) {
-    winner.innerText = "Player A Win";
-    winner.classList.add("playerWin");
+    if (res == p1 && me == 'A') {
+      winner.innerText = "Player A Win";
+      winner.classList.add("playerWin");
+      winnerAudio.play();
+    } else if (res == p1 && me == 'B') {
+      winner.innerText = "Player A Win";
+      winner.classList.add("playerLose");
+      loserAudio.play();
+    }
     board_full = true
   } else if (res == p2) {
-    winner.innerText = "Player B Win";
-    winner.classList.add("playerLose");
+    if (res == p1 && me == 'A') {
+      winner.innerText = "Player B Win";
+      winner.classList.add("playerLose");
+      loserAudio.play();
+    } else if (res == p1 && me == 'B') {
+      winner.innerText = "Player B Win";
+      winner.classList.add("playerWin");
+      winnerAudio.play();
+    }
     board_full = true
   } else if (board_full) {
     winner.innerText = "Draw!";
     winner.classList.add("draw");
+    drawAudio.play();
   }
 };
 
