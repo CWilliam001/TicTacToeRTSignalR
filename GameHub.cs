@@ -74,6 +74,20 @@ namespace TicTacToeRT
             return game.Id;
         }
 
+        public async Task Start()
+        {
+            string gameId = Context.GetHttpContext().Request.Query["gameId"];
+
+            Game game = games.Find(g => g.Id == gameId);
+            if (game == null)
+            {
+                await Clients.Caller.SendAsync("Reject");
+                return;
+            }
+
+            await Clients.Group(gameId).SendAsync("Start");
+        }
+
         // ----------------------------------------------------------------------------------------
         // Functions
         // ----------------------------------------------------------------------------------------

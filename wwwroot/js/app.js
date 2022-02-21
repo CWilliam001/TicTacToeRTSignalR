@@ -19,7 +19,6 @@ let me = null; // A or B
 const $status = $('#status');
 let playerA = null;
 let playerB = null;
-let pX = null;
 
 // ========================================================================================
 // Events
@@ -42,8 +41,12 @@ con.onclose(err => {
 
 con.on('Reject', () => location = 'list.html');
 
-
 con.on('Ready', (letter, game) => {
+  if (me == null) {
+      me = letter;
+      $('#p' + me).addClass('me');
+  }
+  
   if (game.playerA && game.playerB) {
     playerA = game.playerA.name;
     playerB = game.playerB.name
@@ -53,12 +56,12 @@ con.on('Ready', (letter, game) => {
     <table id="player">
         <tr>
             <td>Player A</td>
-            <td>${ game.playerA.name }</td>
+            <td id="pA" class="">${ game.playerA.name }</td>
             <td>${ p1 }</td>
         </tr>
         <tr>
             <td>Player B</td>
-            <td>${ game.playerB.name }</td>
+            <td id="pB" class="">${ game.playerB.name }</td>
             <td>${ p2 }</td>
         </tr>
     </table>
@@ -66,10 +69,20 @@ con.on('Ready', (letter, game) => {
     `;
     console.log(playerA + " vs " + playerB + "\nMe: " + me);
     $('#playerSymbol').html(html);
-}
+  }
 
-  
+  if (me == 'A' && game.isFull) {
+    console.log("Invoke start");
+    con.invoke('Start');
+  }
+
 });
+
+con.on('Start', () => {
+  $('#playerRound').text("Player B joined");
+  started = true;
+  game_loop();
+})
 
 con.on("Left", () => {
     let id = setTimeout(() => location = 'list.html', 5000);
@@ -79,13 +92,6 @@ con.on("Left", () => {
     }
     console.log("Player Disconnected");
     started = false;
-    // if (letter == 'A') {
-    //   $status.text(`${ playerA } has left the game. You will be redirected back to lobby immediately.`);
-    //   console.log("Display A left message");
-    // } else {
-    //   $status.text(`${ playerB } has left the game. You will be redirected back to lobby immediately.`);
-    //   console.log("Display B left message");
-    // }
     $status.text(`Your opponent has left the game.\nYou will be redirected back to lobby soon.`);
 });
 
@@ -108,7 +114,7 @@ const p2 = "❌";
 let board_full = false;
 let play_board = ["", "", "", "", "", "", "", "", ""];
 let occupiedCount = 0;
-let playerRound = "P1";
+let playerRound = null;
 
 // Board Container : Whole activity changes at this const
 const board_container = document.querySelector(".play-area");
@@ -189,29 +195,45 @@ const check_for_winner = () => {
 // Allow both player to click on the board
 const render_board = () => {
   board_container.innerHTML = ""
-  // Use forEach loop to define all blocks
   con.on('ReceiveMove', (player, move, occcupiedCount, currentGameId) => {
     if (gameId == currentGameId) {
       occupiedCount = occcupiedCount;
       console.log("Player " + me + ": " + "\nReceive Move " + player + "\nMove: " + move + "\nReceive Occupied Count: " + occupiedCount);
       play_board[move] = player;
       game_loop();
-    }    
+    }
   });
+  
   if (occupiedCount % 2 == 0) {
     playerRound = "P1";
   } else {
     playerRound = "P2";
   }
+  
+  if (started == true) {
 
-  console.log("Current round: " + (playerRound == "P1" ? "Player A" : "Player B"));
-  $('#playerRound').text(`${ playerRound == "P1" ? "Player A" : "Player B" }\'s Turn.`);
-  play_board.forEach((e, i) => {
-    board_container.innerHTML += `<div id="block_${ i }" class="block" onclick="add${ playerRound }Move(${ i })">${ play_board[i] }</div>`
-    if (e == p1 || e == p2) {
-      document.querySelector(`#block_${ i }`).classList.add("occupied");
-    }
-  });
+    console.log("Current round: " + (playerRound == "P1" ? "Player A" : "Player B"));
+    $('#playerRound').text(`${ playerRound == "P1" ? "Player A" : "Player B" }\'s Turn.`);
+    // Use forEach loop to define all blocks
+
+    play_board.forEach((e, i) => {
+      board_container.innerHTML += `<div id="block_${ i }" class="block" onclick="add${ playerRound }Move(${ i })">${ play_board[i] }</div>`;
+      
+      if (playerRound == "P1" && me == 'A') {
+        document.getElementById(`block_${ i }`).style.pointerEvents = 'auto'; 
+      } else if (playerRound == "P2" && me == 'B') {
+        document.getElementById(`block_${ i }`).style.pointerEvents = 'auto';
+      } else {
+        document.getElementById(`block_${ i }`).style.pointerEvents = 'none';
+      }
+
+      if (e == p1 || e == p2) {
+        document.querySelector(`#block_${ i }`).classList.add("occupied");
+      }
+    });
+
+  }
+
 };
 
 const game_loop = () => {
@@ -225,7 +247,7 @@ const addP1Move = e => {
     play_board[e] = p1;
     occupiedCount++;
     con.invoke('SendMove', p1, e, occupiedCount, gameId);
-    console.log("Player A: " + p1 + "\nMove: " + e + "\nGame ID: " + gameId + "\nOccupied Count: " + occupiedCount);
+    console.log("Player A: " + p1 + "\nMove: " + e + "\nOccupied Count: " + occupiedCount + "\nGame ID: " + gameId);
     game_loop();
   }
 };
@@ -235,7 +257,7 @@ const addP2Move = e => {
     play_board[e] = p2;
     occupiedCount++;
     con.invoke('SendMove', p2, e, occupiedCount, gameId);
-    console.log("Player B: " + p2 + "\nMove: " + e + "\nGame ID: " + gameId + "\nOccupied Count: " + occupiedCount);
+    console.log("Player B: " + p2 + "\nMove: " + e + "\nOccupied Count: " + occupiedCount + "\nGame ID: " + gameId);
     game_loop();
   }
 };
