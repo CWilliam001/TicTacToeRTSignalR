@@ -67,12 +67,12 @@ con.on('Ready', (letter, game) => {
     </table>
     <h4 id="you_are">You are: Player ${ me }</h4>
     `;
-    console.log(playerA + " vs " + playerB + "\nMe: " + me);
+    // console.log(playerA + " vs " + playerB + "\nMe: " + me);
     $('#playerSymbol').html(html);
   }
 
   if (me == 'A' && game.isFull) {
-    console.log("Invoke start");
+    // console.log("Invoke start");
     con.invoke('Start');
   }
 
@@ -90,7 +90,7 @@ con.on("Left", () => {
     while (id--) {
       clearTimeout(id);
     }
-    console.log("Player Disconnected");
+    // console.log("Player Disconnected");
     started = false;
     $status.text(`Your opponent has left the game.\nYou will be redirected back to lobby soon.`);
 });
@@ -115,6 +115,13 @@ let board_full = false;
 let play_board = ["", "", "", "", "", "", "", "", ""];
 let occupiedCount = 0;
 let playerRound = null;
+
+let winnerAudio = new Audio('audio/winner.mp3');
+let loserAudio = new Audio('audio/loser.mp3');
+let drawAudio = new Audio('audio/draw.mp3');
+winnerAudio.volume = 0.2;
+loserAudio.volume = 0.2;
+drawAudio.volume = 0.2;
 
 // Board Container : Whole activity changes at this const
 const board_container = document.querySelector(".play-area");
@@ -178,9 +185,6 @@ const check_match = () => {
 // Winner and loser results
 const check_for_winner = () => {
   let res = check_match()
-  let winnerAudio = new Audio('audio/winner.mp3');
-  let loserAudio = new Audio('audio/loser.mp3');
-  let drawAudio = new Audio('audio/draw.mp3');
   if (res == p1) {
     if (res == p1 && me == 'A') {
       winner.innerText = "Player A Win";
@@ -216,7 +220,7 @@ const render_board = () => {
   con.on('ReceiveMove', (player, move, occcupiedCount, currentGameId) => {
     if (gameId == currentGameId) {
       occupiedCount = occcupiedCount;
-      console.log("Player " + me + ": " + "\nReceive Move " + player + "\nMove: " + move + "\nReceive Occupied Count: " + occupiedCount);
+      // console.log("Player " + me + ": " + "\nReceive Move " + player + "\nMove: " + move + "\nReceive Occupied Count: " + occupiedCount);
       play_board[move] = player;
       game_loop();
     }
@@ -230,7 +234,7 @@ const render_board = () => {
   
   if (started == true) {
 
-    console.log("Current round: " + (playerRound == "P1" ? "Player A" : "Player B"));
+    // console.log("Current round: " + (playerRound == "P1" ? "Player A" : "Player B"));
     $('#playerRound').text(`${ playerRound == "P1" ? "Player A" : "Player B" }\'s Turn.`);
     // Use forEach loop to define all blocks
 
@@ -265,7 +269,7 @@ const addP1Move = e => {
     play_board[e] = p1;
     occupiedCount++;
     con.invoke('SendMove', p1, e, occupiedCount, gameId);
-    console.log("Player A: " + p1 + "\nMove: " + e + "\nOccupied Count: " + occupiedCount + "\nGame ID: " + gameId);
+    // console.log("Player A: " + p1 + "\nMove: " + e + "\nOccupied Count: " + occupiedCount + "\nGame ID: " + gameId);
     game_loop();
   }
 };
@@ -275,14 +279,14 @@ const addP2Move = e => {
     play_board[e] = p2;
     occupiedCount++;
     con.invoke('SendMove', p2, e, occupiedCount, gameId);
-    console.log("Player B: " + p2 + "\nMove: " + e + "\nOccupied Count: " + occupiedCount + "\nGame ID: " + gameId);
+    // console.log("Player B: " + p2 + "\nMove: " + e + "\nOccupied Count: " + occupiedCount + "\nGame ID: " + gameId);
     game_loop();
   }
 };
 
 // Clear board and remove result
 const reset_board = () => {
-  console.log("Send reset command\n Game ID: " + gameId);
+  // console.log("Send reset command\n Game ID: " + gameId);
   play_board = ["", "", "", "", "", "", "", "", ""];
   board_full = false;
   winner.classList.remove("playerWin");
@@ -292,13 +296,13 @@ const reset_board = () => {
   occupiedCount = 0;
   render_board();
   con.invoke('Reset', gameId);
-  console.log("Send reset command");
+  // console.log("Send reset command");
   console.clear();
 };
 
 con.on('ReceiveReset', currentGameId => {
   if (gameId == currentGameId) {
-    console.log("Receive reset command\nGame ID: " + currentGameId);
+    // console.log("Receive reset command\nGame ID: " + currentGameId);
     play_board = ["", "", "", "", "", "", "", "", ""];
     board_full = false;
     winner.classList.remove("playerWin");
